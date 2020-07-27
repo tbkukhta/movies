@@ -1,0 +1,32 @@
+table {
+    border-collapse: collapse;
+}
+
+table, th, td, .add-movies-block {
+    border: 1px solid black;
+}
+
+td, .add-movies-block {
+    padding: 5px;
+}
+
+form, .add-movies-block {
+    display: inline-block;
+}
+
+.block {
+    margin: 5px 0 10px 0;
+}
+
+.hidden {
+    display: none;
+}
+
+.error-block {
+    color: red;
+}
+
+.has-error {
+    border: 2px solid red;
+    box-shadow: 0 0 3px grey;
+}
