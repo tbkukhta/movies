@@ -10,44 +10,35 @@ $sort = isset($_GET['sort']) ? $_GET['sort'] : 'id';
 $page = isset($_GET['page']) ? $_GET['page'] : '1';
 $recordsPerPage = Config::$params['recordsPerPage'];
 $offset = ($page - 1) * $recordsPerPage;
-$limit = "LIMIT $offset, $recordsPerPage";
+
+$query = "
+    SELECT COUNT(*) OVER() as count, m.*, 
+    (SELECT GROUP_CONCAT(st.name SEPARATOR ', ') as name from stars st
+    JOIN movies_stars mvst ON (st.id = mvst.star_id)
+    JOIN movies mv ON (mvst.movie_id = mv.id)
+    WHERE m.id = mv.id) as stars
+    FROM movies m
+";
 
 if ($title !== '') {
-    $query = "SELECT * FROM movies WHERE title like '%{$title}%'";
+    $query .= " WHERE m.title like '%{$title}%'";
 } elseif ($star !== '') {
-    $query = "
-        SELECT m.* FROM movies m
+    $query .= "
         JOIN movies_stars ms ON (m.id = ms.movie_id)
         JOIN stars s ON (ms.star_id = s.id)
         WHERE s.name like '%{$star}%'
     ";
-} else {
-    $query = "SELECT * FROM movies";
 }
-$query .= " ORDER BY {$sort}";
+$query .= " ORDER BY {$sort} LIMIT $offset, $recordsPerPage";
 
 try {
     $db = Db::getInstance();
     $pdo = $db->getConnection();
 
-    $queryLimit = $pdo->query($query . " " . $limit);
-    $movies = $queryLimit->fetchAll();
-
     $query = $pdo->query($query);
-    $recordsTotal = count($query->fetchAll());
+    $movies = $query->fetchAll();
+    $recordsTotal = $movies[0]['count'];
     $pagesTotal = ceil($recordsTotal / $recordsPerPage);
-
-    foreach ($movies as &$movie) {
-        $query = "
-            SELECT s.name FROM stars s
-            JOIN movies_stars ms ON (s.id = ms.star_id)
-            JOIN movies m ON (ms.movie_id = m.id)
-            WHERE m.id = {$movie['id']}
-        ";
-        $query = $pdo->query($query);
-        $movie['stars'] = $query->fetchAll();
-    }
-    unset($movie);
 } catch (PDOException $e) {
     echo 'Error: ' . $e->getMessage();
 }

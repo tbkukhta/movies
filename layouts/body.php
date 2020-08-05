@@ -94,11 +94,7 @@
                             <td><?= $movie['title'] ?></td>
                             <td><?= $movie['year'] ?></td>
                             <td><?= $movie['format'] ?></td>
-                            <td>
-                                <?= implode(', ', array_map(function ($star) {
-                                    return $star['name'];
-                                }, $movie['stars'])); ?>
-                            </td>
+                            <td><?= $movie['stars'] ?></td>
                             <td>
                                 <button id="delete-movie-button" onclick="return confirm('Вы уверены, что хотите удалить фильм?');">
                                     Удалить
